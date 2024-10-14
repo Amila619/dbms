@@ -23,4 +23,26 @@ CREATE TABLE student(
     Address VARCHAR(100)
 )
 
+technical officer
+
+CREATE TABLE Technical_Officer(
+	Staff_ID CHAR(6) PRIMARY KEY,
+	Enrollement_Date DATE,
+	First_Name VARCHAR(50),
+	Last_Name VARCHAR(50),
+	DOB DATE,
+	Address VARCHAR(100)
+
+)
+
+admin
+
+CREATE TABLE Admin(
+	Admin_ID CHAR(6) PRIMARY KEY,
+	First_Name VARCHAR(50),
+	Last_Name VARCHAR(50),
+	DOB DATE,
+	Address VARCHAR(100)
+
+)
  
