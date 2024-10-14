@@ -1,0 +1,18 @@
+mark
+
+CREATE TABLE mark
+(
+	Mark_recode_id CHAR(5),
+	Course_code CHAR(6),
+	Course_name VARCHAR(50),
+	Grade VARCHAR(1),
+	Quiz VARCHAR(3),
+	Credit VARCHAR(3),
+	CA VARCHAR(4),
+	M_Theory VARCHAR(10),
+	M_Patrical VARCHAR(10),
+	F_Theory VARCHAR(10),
+	F_Patrical VARCHAR(10),
+	Lec_ID CHAR(6)
+
+);
