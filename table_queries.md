@@ -45,4 +45,32 @@ CREATE TABLE Admin(
 	Address VARCHAR(100)
 
 )
- 
+
+course
+
+CREATE TABLE course
+(
+	Course_Code CHAR(6) PRIMARY KEY,
+	Course_Name VARCHAR(50),
+	Theory BOOLEAN,
+	Practical BOOLEAN,
+	Credit INT,
+	
+	FOREIGN KEY(Lec_ID) REFERENCES Lecture(Lec_ID)
+);
+
+
+lecturer
+
+CREATE TABLE lecturer
+(
+	Lec_ID CHAR(6) PRIMARY KEY,
+	First_Name VARCHAR(50),
+	Last_Name VARCHAR(50),
+	DOM DATE,
+	Address VARCHAR(100),
+	Position VARCHAR(50),
+	Department VARCHAR(50),
+	Enrolment_Date DATE,
+);
+
