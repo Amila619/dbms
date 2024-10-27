@@ -7,7 +7,7 @@ CREATE TABLE final_exam_sit_status(
     Attendance_Record_ID CHAR(6),
     Mark_Record_ID,
     FOREIGN KEY (Attendance_Record_ID) REFERENCES AS attendance(Attendance_Record_ID),
-    FOREIGN KEY (Mark_Record_ID) REFERENCES AS mark(Mark_Record_ID),
+    FOREIGN KEY (Mark_Record_ID) REFERENCES AS mark(Mark_Record_ID) ON UPDATE CASCADE ON DELETE CASCADE,
 )
 
 student
@@ -55,7 +55,8 @@ CREATE TABLE course
 	Theory BOOLEAN,
 	Practical BOOLEAN,
 	Credit INT,
-	FOREIGN KEY(Lec_ID) REFERENCES Lecture(Lec_ID)
+	
+	FOREIGN KEY(Lec_ID) REFERENCES Lecture(Lec_ID)ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 
@@ -73,3 +74,43 @@ CREATE TABLE lecturer
 	Enrolment_Date DATE,
 );
 
+mark
+
+CREATE TABLE mark
+(
+	Mark_Recode_ID CHAR(5) PRIMARY KEY,
+	Course_Code CHAR(6),
+	Grade VARCHAR(1),
+	Quiz VARCHAR(3),
+	Credit VARCHAR(3),
+	CA VARCHAR(4),
+	M_Theory VARCHAR(10),
+	M_Patrical VARCHAR(10),
+	F_Theory VARCHAR(10),
+	F_Patrical VARCHAR(10),
+	Reg_No CHAR(6),
+
+	FOREIGN KEY(Course_Code) REFERENCES course(Course_Code) ON UPDATE CASCADE ON DELETE CASCADE,
+	FOREIGN KEY(Reg_No) REFERENCES student(Reg_No) ON UPDATE CASCADE ON DELETE CASCADE
+
+
+);
+
+
+
+Attendence
+
+CREATE TABLE Attendence
+(
+	Attendence_Recode_ID CHAR(5) PRIMARY KEY,
+	Course_Code CHAR(6),
+	Theory BOOLEAN,
+	Patrical BOOLEAN,
+	Medical_Status BOOLEAN,
+	Session_No char(4),
+	Date DATE,
+	Reg_No CHAR(4),
+
+	FOREIGN KEY(Course_Code) REFERENCES course(Course_Code)ON UPDATE CASCADE ON DELETE CASCADE,
+	FOREIGN KEY(Reg_No) REFERENCES student(Reg_No)ON UPDATE CASCADE ON DELETE CASCADE
+);
