@@ -55,7 +55,6 @@ CREATE TABLE course
 	Theory BOOLEAN,
 	Practical BOOLEAN,
 	Credit INT,
-	
 	FOREIGN KEY(Lec_ID) REFERENCES Lecture(Lec_ID)
 );
 
