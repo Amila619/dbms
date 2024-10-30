@@ -1,80 +1,66 @@
-User Table
+-- Final Exam Sit Status Table
 
-CREATE TABLE user
-(
-    User_ID CHAR(6) PRIMARY KEY,
-    Full_Name VARCHAR(50),
-    Last_Name VARCHAR(50),
-    DOB DATE,
-    Address VARCHAR(100)
-);
 
-Final Exam Sit Status Table
-
-CREATE TABLE final_exam_sit_status(
+CREATE TABLE Final_Exam_Sit_Status (
     Eligibility_ID CHAR(6) PRIMARY KEY,
     Course_Code CHAR(6),
     Status BOOLEAN,
     Attendance_Record_ID CHAR(6),
     Mark_Record_ID CHAR(6),
+    Stu_Reg_No CHAR(6),
     FOREIGN KEY (Attendance_Record_ID) REFERENCES Attendance(Attendance_Record_ID),
-    FOREIGN KEY (Mark_Record_ID) REFERENCES mark(Mark_Record_ID) ON UPDATE CASCADE ON DELETE CASCADE
+    FOREIGN KEY (Mark_Record_ID) REFERENCES Mark(Mark_Record_ID) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (Stu_Reg_No) REFERENCES Student(Stu_Reg_No) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
-Student Table
+-- Student Table
 
-CREATE TABLE student(
-    Reg_No CHAR(6) PRIMARY KEY,
+
+
+CREATE TABLE Student (
+    Stu_Reg_No CHAR(6) PRIMARY KEY,
     Level CHAR(2), 
     Department VARCHAR(50),
     Academic_Status BOOLEAN,
     First_Name VARCHAR(50),
     Last_Name VARCHAR(50),
     DOB DATE,
-    Address VARCHAR(100),
-    FOREIGN KEY(Reg_No) REFERENCES user(User_ID) ON UPDATE CASCADE ON DELETE CASCADE
+    Address VARCHAR(100)
 );
 
-Technical Officer Table
 
-CREATE TABLE Technical_Officer(
+
+-- Technical Officer Table
+
+CREATE TABLE Technical_Officer (
     Staff_ID CHAR(6) PRIMARY KEY,
     Enrollment_Date DATE,
     First_Name VARCHAR(50),
     Last_Name VARCHAR(50),
     DOB DATE,
-    Address VARCHAR(100),
-    FOREIGN KEY(Staff_ID) REFERENCES user(User_ID) ON UPDATE CASCADE ON DELETE CASCADE
+    Address VARCHAR(100)
 );
 
-Admin Table
 
-CREATE TABLE Admin(
-    Admin_ID CHAR(6) PRIMARY KEY,
-    First_Name VARCHAR(50),
-    Last_Name VARCHAR(50),
-    DOB DATE,
-    Address VARCHAR(100),
-    FOREIGN KEY(Admin_ID) REFERENCES user(User_ID) ON UPDATE CASCADE ON DELETE CASCADE
-);
 
-Course Table
+-- Course Table
 
-CREATE TABLE course
-(
+CREATE TABLE Course (
     Course_Code CHAR(6) PRIMARY KEY,
     Course_Name VARCHAR(50),
     Theory BOOLEAN,
     Practical BOOLEAN,
     Credit INT,
     Lec_ID CHAR(6),
-    FOREIGN KEY(Lec_ID) REFERENCES lecturer(Lec_ID) ON UPDATE CASCADE ON DELETE CASCADE
+    FOREIGN KEY(Lec_ID) REFERENCES Lecturer(Lec_ID) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
-Lecturer Table
 
-CREATE TABLE lecturer
-(
+
+-- Lecturer Table
+
+
+CREATE TABLE Lecturer (
     Lec_ID CHAR(6) PRIMARY KEY,
     First_Name VARCHAR(50),
     Last_Name VARCHAR(50),
@@ -82,14 +68,15 @@ CREATE TABLE lecturer
     Address VARCHAR(100),
     Position VARCHAR(50),
     Department VARCHAR(50),
-    Enrollment_Date DATE,
-    FOREIGN KEY(Lec_ID) REFERENCES user(User_ID) ON UPDATE CASCADE ON DELETE CASCADE
+    Enrollment_Date DATE
 );
 
-Mark Table
 
-CREATE TABLE mark
-(
+
+-- Mark Table
+
+
+CREATE TABLE Mark (
     Mark_Record_ID CHAR(5) PRIMARY KEY,
     Course_Code CHAR(6),
     Grade CHAR(1),
@@ -100,15 +87,20 @@ CREATE TABLE mark
     M_Practical VARCHAR(10),
     F_Theory VARCHAR(10),
     F_Practical VARCHAR(10),
-    Reg_No CHAR(6),
-    FOREIGN KEY(Course_Code) REFERENCES course(Course_Code) ON UPDATE CASCADE ON DELETE CASCADE,
-    FOREIGN KEY(Reg_No) REFERENCES student(Reg_No) ON UPDATE CASCADE ON DELETE CASCADE
+    Stu_Reg_No CHAR(6),
+    FOREIGN KEY(Course_Code) REFERENCES Course(Course_Code) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY(Stu_Reg_No) REFERENCES Student(Stu_Reg_No) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
-Attendance Table
 
-CREATE TABLE Attendance
-(
+
+
+-- Attendance Table
+
+
+
+
+CREATE TABLE Attendance (
     Attendance_Record_ID CHAR(6) PRIMARY KEY,
     Course_Code CHAR(6),
     Theory BOOLEAN,
@@ -116,47 +108,82 @@ CREATE TABLE Attendance
     Medical_Status BOOLEAN,
     Session_No CHAR(3),
     Date DATE,
-    Reg_No CHAR(6),
-    FOREIGN KEY(Course_Code) REFERENCES course(Course_Code) ON UPDATE CASCADE ON DELETE CASCADE,
-    FOREIGN KEY(Reg_No) REFERENCES student(Reg_No) ON UPDATE CASCADE ON DELETE CASCADE
+    Stu_Reg_No CHAR(6),
+    FOREIGN KEY(Course_Code) REFERENCES Course(Course_Code) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY(Stu_Reg_No) REFERENCES Student(Stu_Reg_No) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
-User Telephone Table
 
-CREATE TABLE user_telephone
-(
-    User_ID CHAR(6),
+
+-- Student Telephone Table
+
+
+
+
+CREATE TABLE Stu_Telephone (
+    Stu_Reg_No CHAR(6),
     Telephone VARCHAR(10),
-    FOREIGN KEY(User_ID) REFERENCES user(User_ID) ON UPDATE CASCADE ON DELETE CASCADE
+    FOREIGN KEY(Stu_Reg_No) REFERENCES Student(Stu_Reg_No) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
-Student Course Table
 
-CREATE TABLE std_course
-(
-    Reg_No CHAR(6),
+
+-- Lecturer Telephone Table
+
+
+
+CREATE TABLE Lec_Telephone (
+    Lec_ID CHAR(6),
+    Telephone VARCHAR(10),
+    FOREIGN KEY(Lec_ID) REFERENCES Lecturer(Lec_ID) ON UPDATE CASCADE ON DELETE CASCADE
+);
+
+
+
+-- Technical Officer Telephone Table
+
+
+CREATE TABLE Technical_Telephone (
+    Staff_ID CHAR(6),
+    Telephone VARCHAR(10),
+    FOREIGN KEY(Staff_ID) REFERENCES TechnicalOfficer(Staff_ID) ON UPDATE CASCADE ON DELETE CASCADE
+);
+
+
+
+-- Student Course Table
+
+
+CREATE TABLE Std_Course (
+    Stu_Reg_No CHAR(6),
     Course_Code CHAR(6),
-    PRIMARY KEY (Reg_No, Course_Code),
-    FOREIGN KEY(Course_Code) REFERENCES course(Course_Code) ON UPDATE CASCADE ON DELETE CASCADE,
-    FOREIGN KEY(Reg_No) REFERENCES student(Reg_No) ON UPDATE CASCADE ON DELETE CASCADE
+    PRIMARY KEY (Stu_Reg_No, Course_Code),
+    FOREIGN KEY(Course_Code) REFERENCES Course(Course_Code) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY(Stu_Reg_No) REFERENCES Student(Stu_Reg_No) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
-Technical Attendance Table
 
-CREATE TABLE tech_attendance
-(
+
+-- Technical Attendance Table
+
+
+
+CREATE TABLE Tech_Attendance (
     Staff_ID CHAR(6),
     Attendance_Record_ID CHAR(6),
     FOREIGN KEY(Attendance_Record_ID) REFERENCES Attendance(Attendance_Record_ID) ON UPDATE CASCADE ON DELETE CASCADE,
-    FOREIGN KEY(Staff_ID) REFERENCES Technical_Officer(Staff_ID) ON UPDATE CASCADE ON DELETE CASCADE
+    FOREIGN KEY(Staff_ID) REFERENCES TechnicalOfficer(Staff_ID) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
-GPA Table
 
-CREATE TABLE gpa
-(
+
+-- GPA Table
+
+
+
+CREATE TABLE GPA (
     Record_ID CHAR(6) PRIMARY KEY,
     Semester VARCHAR(20),
-    Reg_No CHAR(6),
-    FOREIGN KEY(Reg_No) REFERENCES student(Reg_No) ON UPDATE CASCADE ON DELETE CASCADE
+    Stu_Reg_No CHAR(6),
+    FOREIGN KEY(Stu_Reg_No) REFERENCES Student(Stu_Reg_No) ON UPDATE CASCADE ON DELETE CASCADE
 );
