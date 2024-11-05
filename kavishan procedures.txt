@@ -1,0 +1,123 @@
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+No 01
+
+**************When TG number is entered, Attendance percentage is given for every subject with the eligibility**************
+
+DELIMITER //
+
+CREATE PROCEDURE GetStudentAttendanceDetails(
+    IN student_reg_no CHAR(10)
+)
+BEGIN
+    SELECT 
+        c.Course_Code,
+        c.Course_Name,
+        COUNT(a.Session_No) AS Total_Sessions,
+        SUM(CASE WHEN a.Attendance_Status = 'PRESENT' THEN 1 ELSE 0 END) AS Sessions_Attended,
+        ROUND((SUM(CASE WHEN a.Attendance_Status = 'PRESENT' THEN 1 ELSE 0 END) / COUNT(a.Session_No)) * 100, 2) AS Attendance_Percentage,
+        CASE
+            WHEN ROUND((SUM(CASE WHEN a.Attendance_Status = 'PRESENT' THEN 1 ELSE 0 END) / COUNT(a.Session_No)) * 100, 2) >= 80 THEN 'Eligible'
+            ELSE 'Not Eligible'
+        END AS Eligibility
+    FROM 
+        Attendance a
+    INNER JOIN 
+        Course c ON a.Course_Code = c.Course_Code
+    WHERE 
+        a.Stu_Reg_No = student_reg_no
+    GROUP BY 
+        c.Course_Code, c.Course_Name;
+END //
+
+DELIMITER ;
+
+CALL GetStudentAttendanceDetails('TG1486');
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+No 02
+
+**************When Course code is entered, Attendance percentage is given for every student with eligibility********************
+
+DELIMITER //
+
+CREATE PROCEDURE GetAttendanceEligibility(IN p_Course_Code CHAR(10))
+BEGIN
+    SELECT 
+        A.Stu_Reg_No,
+        COUNT(DISTINCT A.Session_No) AS Total_Session_Count,
+        SUM(CASE WHEN A.Attendance_Status = 'PRESENT' THEN 1 ELSE 0 END) AS Attended_Session_Count,
+        ROUND(
+            (SUM(CASE WHEN A.Attendance_Status = 'PRESENT' THEN 1 ELSE 0 END) / COUNT(DISTINCT A.Session_No)) * 100,
+            2
+        ) AS Attendance_Percentage,
+        CASE 
+            WHEN (SUM(CASE WHEN A.Attendance_Status = 'PRESENT' THEN 1 ELSE 0 END) / COUNT(DISTINCT A.Session_No)) * 100 >= 80 
+            THEN 'Eligible'
+            ELSE 'Not Eligible'
+        END AS Eligibility
+    FROM 
+        Attendance A
+        INNER JOIN Std_Course SC ON A.Stu_Reg_No = SC.Stu_Reg_No
+    WHERE 
+        SC.Course_Code = p_Course_Code 
+        AND A.Course_Code = p_Course_Code
+    GROUP BY 
+        A.Stu_Reg_No;
+END //
+
+DELIMITER ;
+
+CALL GetAttendanceEligibility('ICT1212');
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+No 03
+
+**************When Course code and Student registration number are entered, Attendance percentage is given********************
+
+DELIMITER //
+
+DELIMITER //
+
+CREATE PROCEDURE GetAttendanceEligibilityBy_Coursecode_And_Regno(
+    IN p_Stu_Reg_No CHAR(10),
+    IN p_Course_Code CHAR(10)
+)
+BEGIN
+    DECLARE total_sessions INT;
+    DECLARE attended_sessions INT;
+    DECLARE attendance_percentage DECIMAL(5,2);
+    DECLARE eligibility_status VARCHAR(15);
+    
+    SELECT COUNT(DISTINCT Session_No) INTO total_sessions
+    FROM Attendance
+    WHERE Course_Code = p_Course_Code;
+
+    SELECT COUNT(DISTINCT Session_No) INTO attended_sessions
+    FROM Attendance
+    WHERE Stu_Reg_No = p_Stu_Reg_No
+      AND Course_Code = p_Course_Code
+      AND Attendance_Status = 'PRESENT';
+
+    SET attendance_percentage = (attended_sessions / total_sessions) * 100;
+
+    IF attendance_percentage >= 80 THEN
+        SET eligibility_status = 'Eligible';
+    ELSE
+        SET eligibility_status = 'Not Eligible';
+    END IF;
+
+    SELECT 
+        total_sessions AS `Total_Session_Count`,
+        attended_sessions AS `Sessions_Attended`,
+        attendance_percentage AS `Attendance_Percentage`,
+        eligibility_status AS `Eligibility`;
+END//
+
+DELIMITER ;
+
+CALL GetAttendanceEligibilityBy_Coursecode_And_Regno('TG1486', 'ICT1212');
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------

@@ -1,0 +1,193 @@
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+No 01
+**************View for every student and every subject attendanc adn eligiblity********************
+
+CREATE VIEW Student_Attendance_Eligibility AS
+SELECT 
+    a.Stu_Reg_No,
+    a.Course_Code,
+    (SUM(CASE WHEN a.Attendance_Status = 'PRESENT' THEN 1 ELSE 0 END) / COUNT(a.Session_No) * 100) AS Attendance_Percentage,
+    CASE 
+        WHEN (SUM(CASE WHEN a.Attendance_Status = 'PRESENT' THEN 1 ELSE 0 END) / COUNT(a.Session_No) * 100) >= 80 THEN 'Eligible'
+        ELSE 'Not Eligible'
+    END AS Eligibility
+FROM 
+    Attendance a
+JOIN 
+    Std_Course sc ON a.Stu_Reg_No = sc.Stu_Reg_No AND a.Course_Code = sc.Course_Code
+GROUP BY 
+    a.Stu_Reg_No, a.Course_Code;
+
+SELECT * FROM Student_Attendance_Eligibility;
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+No 02
+
+**************View for attendance only for theory courses********************
+
+CREATE VIEW TheoryCourseAttendance AS
+SELECT 
+    A.Stu_Reg_No AS Student_Reg_No,
+    C.Course_Code,
+    'Theory' AS Course_Type,
+    COUNT(A.Session_No) AS Total_Sessions,
+    SUM(CASE WHEN A.Attendance_Status = 'PRESENT' THEN 1 ELSE 0 END) AS Sessions_Attended,
+    ROUND((SUM(CASE WHEN A.Attendance_Status = 'PRESENT' THEN 1 ELSE 0 END) / COUNT(A.Session_No)) * 100, 2) AS Attendance_Percentage
+FROM 
+    Attendance A
+INNER JOIN 
+    Course C ON A.Course_Code = C.Course_Code
+WHERE 
+    C.Theory = 1
+GROUP BY 
+    A.Stu_Reg_No, C.Course_Code;
+
+select * from TheoryCourseAttendance;
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+No 03
+
+**************View for attendance only for practical courses********************
+
+CREATE VIEW PracticalCourseAttendance AS
+SELECT 
+    A.Stu_Reg_No AS Student_Reg_No,
+    C.Course_Code,
+    'Practical' AS Course_Type,
+    COUNT(A.Session_No) AS Total_Sessions,
+    SUM(CASE WHEN A.Attendance_Status = 'PRESENT' THEN 1 ELSE 0 END) AS Sessions_Attended,
+    ROUND((SUM(CASE WHEN A.Attendance_Status = 'PRESENT' THEN 1 ELSE 0 END) / COUNT(A.Session_No)) * 100, 2) AS Attendance_Percentage
+FROM 
+    Attendance A
+INNER JOIN 
+    Course C ON A.Course_Code = C.Course_Code
+WHERE 
+    C.Practical = 1
+GROUP BY 
+    A.Stu_Reg_No, C.Course_Code;
+
+select * from PracticalCourseAttendance;
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+No 04
+
+**************View for attendance  for both theory and practical courses********************
+CREATE VIEW Attendance_Percentage_For_Theory_Practical AS
+SELECT 
+    s.Stu_Reg_No,
+    c.Course_Code,
+    CASE 
+        WHEN c.Theory = 1 AND c.Practical = 0 THEN 'Theory'
+        WHEN c.Theory = 0 AND c.Practical = 1 THEN 'Practical'
+        WHEN c.Theory = 1 AND c.Practical = 1 THEN 'Theory and Practical'
+    END AS Course_Type,
+    COUNT(a.Session_No) AS Total_Sessions,
+    SUM(CASE WHEN a.Attendance_Status = 'PRESENT' THEN 1 ELSE 0 END) AS Sessions_Attended,
+    ROUND((SUM(CASE WHEN a.Attendance_Status = 'PRESENT' THEN 1 ELSE 0 END) / COUNT(a.Session_No)) * 100, 2) AS Attendance_Percentage
+FROM 
+    Std_Course s
+JOIN 
+    Course c ON s.Course_Code = c.Course_Code
+LEFT JOIN 
+    Attendance a ON s.Stu_Reg_No = a.Stu_Reg_No AND s.Course_Code = a.Course_Code
+GROUP BY 
+    s.Stu_Reg_No, c.Course_Code, Course_Type;
+
+select * from Attendance_Percentage_For_Theory_Practical;
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+No 05
+**************View details below 80%********************
+
+CREATE VIEW Student_Attendance_Lessthan80_Percent AS
+SELECT 
+    a.Stu_Reg_No AS Student_Reg_No,
+    a.Course_Code,
+    c.Course_Name,
+    a.Medical_Status,
+    (COUNT(CASE WHEN a.Attendance_Status = 'PRESENT' THEN 1 END) / 15.0) * 100 AS Attendance_Percentage
+FROM 
+    Attendance a
+JOIN 
+    Course c ON a.Course_Code = c.Course_Code
+GROUP BY 
+    a.Stu_Reg_No, a.Course_Code, c.Course_Name, a.Medical_Status
+HAVING 
+    (COUNT(CASE WHEN a.Attendance_Status = 'PRESENT' THEN 1 END) / 15.0) * 100 < 80;
+
+select * from Student_Attendance_Lessthan80_Percent;
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+No 06
+**************View details more than 80%********************
+
+CREATE VIEW Student_Attendance_Morethan80_Percent AS
+SELECT
+    s.Stu_Reg_No,
+    a.Course_Code,
+    c.Course_Name,
+    a.Medical_Status,
+    ROUND(
+        (SUM(CASE WHEN a.Attendance_Status = 'PRESENT' THEN 1 ELSE 0 END) / COUNT(a.Session_No)) * 100, 
+        2
+    ) AS attendance_percentage
+FROM
+    Attendance a
+JOIN
+    Course c ON a.Course_Code = c.Course_Code
+JOIN
+    Std_Course s ON a.Stu_Reg_No = s.Stu_Reg_No AND a.Course_Code = s.Course_Code
+GROUP BY
+    s.Stu_Reg_No, a.Course_Code, c.Course_Name, a.Medical_Status
+HAVING
+    attendance_percentage > 80;
+
+select * from Student_Attendance_Morethan80_Percent;
+
+
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+No 07
+
+**************View details less than 80% and have submitted medicals********************
+
+CREATE VIEW Students_Below_80_Percent_With_Medical AS
+SELECT 
+    a.Stu_Reg_No AS Student_Reg_No,
+    a.Course_Code,
+    c.Course_Name,
+    a.Medical_Status,
+    CONCAT(ROUND((SUM(CASE WHEN a.Attendance_Status = 'PRESENT' THEN 1 ELSE 0 END) / 15.0) * 100, 2), '%') AS Attendance_Percentage,
+    'MC' AS Medical_code
+FROM 
+    Attendance a
+JOIN 
+    Course c ON a.Course_Code = c.Course_Code
+WHERE 
+    a.Medical_Status IN ('APPROVED', 'NOT-APPROVED')
+GROUP BY 
+    a.Stu_Reg_No, a.Course_Code, a.Medical_Status, c.Course_Name
+HAVING 
+    (SUM(CASE WHEN a.Attendance_Status = 'PRESENT' THEN 1 ELSE 0 END) / 15.0) * 100 < 80;
+
+
+select * from Students_Below_80_Percent_With_Medical;
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
