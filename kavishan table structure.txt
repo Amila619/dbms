@@ -1,0 +1,38 @@
+CREATE TABLE Attendance (
+    Attendance_Record_ID CHAR(10) PRIMARY KEY,
+    Course_Code CHAR(10),
+    Type ENUM('Theory', 'Practical'),
+    Medical_Status ENUM('NOT-APPROVED', 'APPROVED', 'NOT-SUBMITTED'),
+    Session_No CHAR(3),
+    Date DATE,
+    Stu_Reg_No CHAR(10),
+    FOREIGN KEY(Course_Code) REFERENCES Course(Course_Code) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY(Stu_Reg_No) REFERENCES Student(Stu_Reg_No) ON UPDATE CASCADE ON DELETE CASCADE
+);
+
+
+
+ALTER TABLE Attendance
+ADD COLUMN Attendance_Status ENUM('PRESENT', 'ABSENT') DEFAULT 'PRESENT';
+
+UPDATE Attendance
+SET Attendance_Status = 'ABSENT'
+WHERE Medical_Status IN ('NOT-APPROVED', 'APPROVED');
+
+UPDATE Attendance
+SET Attendance_Status = 'ABSENT'
+WHERE Session_No = '02';
+
+UPDATE Attendance
+SET Attendance_Status = 'ABSENT'
+WHERE Attendance_Record_ID BETWEEN 'ATD420' AND 'ATD520';
+
+
+
+
+CREATE TABLE Tech_Attendance (
+    Staff_ID CHAR(10),
+    Attendance_Record_ID CHAR(10),
+    FOREIGN KEY(Attendance_Record_ID) REFERENCES Attendance(Attendance_Record_ID) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY(Staff_ID) REFERENCES Technical_Officer(Staff_ID) ON UPDATE CASCADE ON DELETE CASCADE
+);
