@@ -1,0 +1,152 @@
+
+*************************view************************************8
+
+---------------------------------------------------------------------------------
+
+-- View for see the whole batche CGPA
+
+CREATE VIEW WholebatchCGPA AS
+SELECT 
+    s.Stu_Reg_No AS student_reg_no,
+    c.Course_Code AS course_code,
+    c.Course_Name AS course_name,
+    SUM(g.Credit * c.Credit) / SUM(c.Credit) AS CGPA
+FROM 
+    Student s
+JOIN 
+    StudentGrade g ON s.Stu_Reg_No = g.stuid
+JOIN 
+    Course c ON g.courseid = c.Course_Code
+WHERE 
+    c.Credit_Status = 'CREDIT'
+GROUP BY 
+    s.Stu_Reg_No, c.Course_Code, c.Course_Name;
+
+select * from WholebatchCGPA;
+
+
+
+*************View details less than 80% and have submitted medicals*******************
+
+CREATE VIEW Students_Below_80_Percent_With_Medical AS
+SELECT 
+    a.Stu_Reg_No AS Student_Reg_No,
+    a.Course_Code,
+    c.Course_Name,
+    a.Medical_Status,
+    CONCAT(ROUND((SUM(CASE WHEN a.Attendance_Status = 'PRESENT' THEN 1 ELSE 0 END) / 15.0) * 100, 2), '%') AS Attendance_Percentage,
+    'MC' AS Medical_code
+FROM 
+    Attendance a
+JOIN 
+    Course c ON a.Course_Code = c.Course_Code
+WHERE 
+    a.Medical_Status IN ('APPROVED', 'NOT-APPROVED')
+GROUP BY 
+    a.Stu_Reg_No, a.Course_Code, a.Medical_Status, c.Course_Name
+HAVING 
+    (SUM(CASE WHEN a.Attendance_Status = 'PRESENT' THEN 1 ELSE 0 END) / 15.0) * 100 < 80;
+
+
+select * from Students_Below_80_Percent_With_Medical;
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+CREATE VIEW Student_Attendance_Morethan80_Percent AS
+SELECT
+    s.Stu_Reg_No,
+    a.Course_Code,
+    c.Course_Name,
+    a.Medical_Status,
+    ROUND(
+        (SUM(CASE WHEN a.Attendance_Status = 'PRESENT' THEN 1 ELSE 0 END) / COUNT(a.Session_No)) * 100, 
+        2
+    ) AS attendance_percentage
+FROM
+    Attendance a
+JOIN
+    Course c ON a.Course_Code = c.Course_Code
+JOIN
+    Std_Course s ON a.Stu_Reg_No = s.Stu_Reg_No AND a.Course_Code = s.Course_Code
+GROUP BY
+    s.Stu_Reg_No, a.Course_Code, c.Course_Name, a.Medical_Status
+HAVING
+    attendance_percentage > 80;
+
+select * from Student_Attendance_Morethan80_Percent;
+
+
+*********************************procedure*********************************
+
+------------------------------------------------------------------------------------
+-- get the student cgpa enter the tg number
+
+DELIMITER //
+
+CREATE PROCEDURE get_student_cgpa(IN input_stu_reg_no VARCHAR(10))
+BEGIN
+   
+    DECLARE total_credits INT DEFAULT 0;
+    DECLARE weighted_credit_sum DECIMAL(10, 2) DEFAULT 0.0;
+
+
+    SELECT 
+        SUM(g.Credit * c.Credit),
+        SUM(c.Credit)
+    INTO 
+        weighted_credit_sum,
+        total_credits
+    FROM 
+        StudentGrade g
+    JOIN 
+        Course c ON g.courseid = c.Course_Code
+    WHERE 
+        g.stuid = input_stu_reg_no AND c.Credit_Status = 'CREDIT';
+
+   
+    SELECT 
+        c.Course_Code AS course_code,
+        c.Course_Name AS course_name,
+        CASE
+            WHEN total_credits > 0 THEN weighted_credit_sum / total_credits
+            ELSE 0
+        END AS CGPA
+    FROM 
+        StudentGrade g
+    JOIN 
+        Course c ON g.courseid = c.Course_Code
+    WHERE 
+        g.stuid = input_stu_reg_no AND c.Credit_Status = 'CREDIT';
+END //
+
+DELIMITER ;
+
+CALL get_student_cgpa('TG1381');
+
+
+------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

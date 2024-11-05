@@ -1,0 +1,149 @@
+*******************************view**************************************
+
+
+***************end exam marks for hole batch***************
+CREATE VIEW End_exam_mark AS
+SELECT 
+    e.Stu_Reg_No,
+    e.Course_Code,
+    CASE 
+        WHEN e.eligibility_for_final = 'Eligible' THEN (s.Final_CA_Mark + m.F_Theory + m.F_Practical)
+        ELSE 'Not a result'
+    END AS final_mark
+FROM 
+    Final_exam_sit_eligibility e
+JOIN 
+    Mark m ON e.Stu_Reg_No = m.Stu_Reg_No AND e.Course_Code = m.Course_Code
+JOIN 
+    StudentFinalCA_Marks s ON e.Stu_Reg_No = s.Stu_Reg_No AND e.Course_Code = s.Course_Code;
+
+
+select * from End_exam_mark; 
+
+**************8get the student mid marks******************************** 
+CREATE VIEW StudentMidterm_Marks AS
+SELECT
+s.Stu_Reg_No AS StudentID,
+sc.Course_Code AS CourseID,
+s.Department AS Department,
+(m.M_Theory + m.M_Practical)  AS MidMark
+FROM Student s
+INNER JOIN Std_Course sc ON s.Stu_Reg_No = sc.Stu_Reg_No
+INNER JOIN Mark m ON sc.Course_Code = m.Course_Code AND s.Stu_Reg_No = m.Stu_Reg_No;
+
+
+
+select * from student_mid_term_marks; 
+
+
+-- CREATE StudentFinalCA_Marks VIEW**************************
+
+CREATE VIEW StudentFinalCA_Marks AS
+SELECT s.Stu_Reg_No,m.Course_Code,(m.Quiz + m.Assignment) AS CA_Score,
+CASE
+WHEN (m.Quiz + m.Assignment) < 10 THEN 'Not Eligible'
+ELSE 'Eligible'
+END AS Eligibility_Status,
+CASE
+WHEN (m.Quiz + m.Assignment) >= 10 THEN
+(m.Quiz + m.Assignment + m.M_Practical + m.M_Theory)
+ELSE NULL
+END AS Final_CA_Mark
+FROM Mark m
+INNER JOIN Student s ON m.Stu_Reg_No = s.Stu_Reg_No;
+
+select * from StudentFinalCA_Marks;
+
+
+
+
+
+*******************************procedure***********************************
+
+
+- get the final ca marks for every student in each course providing the course_code***************************************************************
+
+
+DELIMITER //
+
+CREATE PROCEDURE GetStudentFinalEligibilityByCourse(
+    IN input_Course_Code CHAR(10)
+)
+BEGIN
+    SELECT 
+        Stu_Reg_No,
+        Course_Code,
+        Final_CA_Mark,
+        CASE
+            WHEN Final_CA_Mark >= 25 THEN 'Eligible'
+            ELSE 'Not Eligible'
+        END AS Eligible_for_Final
+    FROM 
+        StudentFinalCA_Marks
+    WHERE 
+        Course_Code = input_Course_Code;
+END //
+
+DELIMITER ;
+
+
+CALL GetStudentFinalEligibilityByCourse('Course code');
+
+
+
+
+
+-- get the student cursecode and ca marks,course name by providing the tg number*********************************************************************
+
+DELIMITER //
+
+CREATE PROCEDURE GetStudentEligibilityForFinal(
+    IN input_Stu_Reg_No CHAR(10)
+)
+BEGIN
+    SELECT 
+        Stu_Reg_No, 
+        Course_Code, 
+        Final_CA_Mark,
+        CASE
+            WHEN Final_CA_Mark IS NULL OR Final_CA_Mark <= 25 THEN 'Not Eligible'
+            ELSE 'Eligible'
+        END AS Eligible_for_Final
+    FROM 
+        StudentFinalCA_Marks
+    WHERE 
+        Stu_Reg_No = input_Stu_Reg_No;
+END //
+
+DELIMITER ;
+
+
+
+CALL GetStudentEligibilityForFinal('Stu_Reg_No');
+
+
+
+-- CREATE PROCEDURE TO DISPLAY mid ca pass student in each student********************************************************
+
+
+DELIMITER //
+
+CREATE PROCEDURE CheckMidCAEligibility(
+    IN p_Stu_Reg_No CHAR(10),
+    IN p_Course_Code CHAR(10)
+)
+BEGIN
+    DECLARE eligibility_status VARCHAR(20);
+    SELECT CASE
+             WHEN (Quiz + Assignment) > 10 THEN 'Eligible'
+             ELSE 'Not Eligible'
+           END INTO eligibility_status
+    FROM Mark
+    WHERE Stu_Reg_No = p_Stu_Reg_No
+      AND Course_Code = p_Course_Code;
+
+    SELECT eligibility_status AS Mid_CA_Eligibility;
+END //
+
+DELIMITER ;
+

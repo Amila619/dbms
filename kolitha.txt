@@ -1,0 +1,99 @@
+kolitha
+
+
+view
+
+////final sit exam eligibility view for whole batch**************
+
+
+CREATE VIEW Final_exam_sit_eligibility AS
+SELECT 
+    e.Stu_Reg_No,
+    e.Course_Code,
+    e.Final_CA_Mark,
+    a.Attendance_Percentage,
+    CASE 
+        WHEN a.Attendance_Percentage >= 80 AND e.Final_CA_Mark >= 25 THEN 'Eligible'
+        ELSE 'Not Eligible'
+    END AS eligibility_for_final
+FROM 
+    StudentFinalCA_Marks e
+JOIN 
+    Student_Attendance_Eligibility a ON e.Stu_Reg_No = a.Stu_Reg_No AND e.Course_Code = a.Course_Code;
+
+
+
+
+
+
+
+
+
+
+
+
+***********************procedure*********************
+
+
+SUBJECT VISE GRADE FOR EACH*******************************
+
+
+DELIMITER //
+
+CREATE PROCEDURE subject_vise_grade_for_each(IN input_course_code VARCHAR(10))
+BEGIN
+    SELECT 
+        courseid,
+        stuid,
+        Grade
+    FROM 
+        StudentGrade
+    WHERE 
+        courseid = input_course_code;
+END //
+
+DELIMITER ;
+
+CALL subject_vise_grade_for_each('Course_code');
+
+
+
+***************** enter the tg cheack the grades in each student***********
+
+DELIMITER //
+
+CREATE PROCEDURE student_grade_for_sub (IN input_Stu_Reg_No VARCHAR(20))
+BEGIN
+    SELECT 
+        stuid, 
+        courseid, 
+        Grade
+    FROM 
+        StudentGrade
+    WHERE 
+        stuid = input_Stu_Reg_No;
+END //
+
+DELIMITER ;
+CALL student_grade_for_sub('Stu_Reg_no');
+
+*****************procedure to checck weather eligigibity final exam for single student *******************************************
+
+DELIMITER //
+
+CREATE PROCEDURE GetFinalEligibility(IN input_Stu_Reg_No VARCHAR(50))
+BEGIN
+    SELECT 
+        e.Stu_Reg_No,
+        e.Course_Code,
+        e.eligibility_for_final
+    FROM 
+        Final_exam_sit_eligibility e
+    WHERE 
+        e.Stu_Reg_No = input_Stu_Reg_No;
+END //
+
+DELIMITER ;
+
+
+CALL GetFinalEligibility('TG1682');
